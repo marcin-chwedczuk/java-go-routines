@@ -1,6 +1,6 @@
 package pl.marcinchwedczuk.jgr;
 
-public class FullChannel<M> {
+class FullChannel<M> {
     private final HalfChannel<M> child2Parent = new HalfChannel<>();
     private final HalfChannel<M> parent2Child = new HalfChannel<>();
 

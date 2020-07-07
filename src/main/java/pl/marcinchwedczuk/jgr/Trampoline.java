@@ -63,6 +63,19 @@ public class Trampoline {
         return cont::apply;
     }
 
+    public static Thunk forkMany(ContUnit... threads) {
+        if (threads.length == 0) {
+            throw new IllegalArgumentException("threads");
+        }
+
+        for (int i = 0; i < threads.length - 1; i++) {
+            runningQueue.add(threads[i]::apply);
+        }
+
+        // Last one is continuation
+        return threads[threads.length-1]::apply;
+    }
+
     public static Thunk delay(long delayMillis, ContUnit cont) {
         Thunk afterDelay = () -> cont.apply(null);
 

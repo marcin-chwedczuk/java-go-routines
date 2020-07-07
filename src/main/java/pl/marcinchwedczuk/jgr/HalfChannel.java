@@ -7,7 +7,7 @@ import java.util.Queue;
 // on a single thread.
 // Mixing reads/writes may result in receiving
 // your own messages, that where sent earlier.
-public class HalfChannel<M> {
+class HalfChannel<M> {
     private final Queue<M> messages = new ArrayDeque<>();
     private final Queue<Cont<M>> waitingQueue = new ArrayDeque<>();
 

@@ -1,6 +1,6 @@
 package pl.marcinchwedczuk.jgr;
 
 @FunctionalInterface
-interface Thunk {
+public interface Thunk {
     Thunk run();
 }
