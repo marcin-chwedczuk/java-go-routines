@@ -6,7 +6,7 @@ package pl.marcinchwedczuk.jgr;
 public class App {
     public static void main(String[] args) {
         try {
-            Trampoline.trampoline(App::mainThunk);
+            Trampoline.run(App::mainThunk);
         } catch (InterruptedException e) {
             System.err.println("Process was interrupted...");
             System.exit(1);
@@ -16,22 +16,14 @@ public class App {
     public static Thunk mainThunk() {
         return Trampoline.<Integer>fork(
                 chan -> Trampoline.fork(
-                        x -> Trampoline.delay(500, xx -> producer(chan, 0)),
-                        x -> producer(chan, 0)),
+                        () -> Trampoline.delay(500, () -> producer(chan, 0)),
+                        () -> producer(chan, 0)),
                 chan -> consumer(chan));
     }
 
-    private static Thunk printWithDelay(int attempt, String threadName) {
-        return Trampoline.delay(1000, unit -> {
-            System.out.println("[" + threadName + "] Hello from go-routine " + attempt + "!");
-            if (attempt == 10) return Trampoline.stopProgram();
-            return printWithDelay(attempt + 1, threadName);
-        });
-    }
-
     private static Thunk producer(Channel<Integer> chan, int n) {
-        return Trampoline.delay(1000, unit ->
-                chan.send(n, unit2 ->
+        return Trampoline.delay(1000, () ->
+                chan.send(n, () ->
                 producer(chan, n+1)));
     }
 

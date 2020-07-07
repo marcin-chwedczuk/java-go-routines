@@ -18,7 +18,7 @@ public class Trampoline {
     private static final ScheduledExecutorService delayScheduler =
             Executors.newScheduledThreadPool(1);
 
-    public static void trampoline(Thunk startWith) throws InterruptedException {
+    public static void run(Thunk startWith) throws InterruptedException {
         runningQueue.add(startWith);
 
         Thunk tmp;
@@ -40,7 +40,7 @@ public class Trampoline {
             }
         }
 
-        delayScheduler.shutdownNow();
+        delayScheduler.shutdown();
     }
 
     public static Thunk stopProgram() { return STOP_PROGRAM; }
@@ -50,18 +50,25 @@ public class Trampoline {
         return () -> cont.apply(null);
     }
 
-    public static <V> Thunk fork(Cont<Channel<V>> newThread, Cont<Channel<V>> cont) {
-        var channel = new Channel<V>();
-        runningQueue.add(() -> newThread.apply(channel));
-        return () -> cont.apply(channel);
+    public static <M> Thunk fork(Cont<Channel<M>> childThread,
+                                 Cont<Channel<M>> cont) {
+        var channel = new FullChannel<M>();
+        runningQueue.add(() -> childThread.apply(channel.childEndpoint()));
+        return () -> cont.apply(channel.parentEndpoint());
     }
 
-    public static Thunk delay(long delayMilis, Cont<Void> cont) {
+    public static Thunk fork(ContUnit childThread,
+                             ContUnit cont) {
+        runningQueue.add(childThread::apply);
+        return cont::apply;
+    }
+
+    public static Thunk delay(long delayMillis, ContUnit cont) {
         Thunk afterDelay = () -> cont.apply(null);
 
         delayScheduler.schedule(
                 () -> delayReady.add(afterDelay),
-                delayMilis, TimeUnit.MILLISECONDS);
+                delayMillis, TimeUnit.MILLISECONDS);
 
         return STOP_THREAD;
     }
