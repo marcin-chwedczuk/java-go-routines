@@ -45,7 +45,7 @@ public class Trampoline {
 
     public static Thunk stopProgram() { return STOP_PROGRAM; }
     public static Thunk stopThread() { return STOP_THREAD; }
-    public static Thunk resume(Thunk thread, Cont<Void> cont) {
+    public static Thunk resume(Thunk thread, ContUnit cont) {
         runningQueue.add(thread);
         return () -> cont.apply(null);
     }
@@ -84,6 +84,11 @@ public class Trampoline {
                 delayMillis, TimeUnit.MILLISECONDS);
 
         return STOP_THREAD;
+    }
+
+    public static Thunk newLock(Cont<Lock> cont) {
+        Lock lock = new Lock();
+        return () -> cont.apply(lock);
     }
 
     private static Thunk newCyclicThunk() {
